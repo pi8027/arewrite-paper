@@ -1,0 +1,378 @@
+\documentclass[12pt, aspectratio=169]{beamer}
+
+\usepackage{fontspec}
+\usepackage{amsmath, amssymb}
+\usepackage{pifont}
+\usepackage[backend=biber, citestyle=authoryear, block=ragged, maxnames=3, maxbibnames=10, doi=true]{biblatex}
+\usepackage[abbreviations]{foreign}
+\usepackage[super]{nth}
+\usepackage{minted}
+\usepackage{appendixnumberbeamer}
+
+\usepackage{unicode-math}
+\defaultfontfeatures{Script=Latin,Kerning=On,Ligatures={Common,Rare},Contextuals = Alternate}
+\setmainfont[BoldFont={Fira Sans SemiBold}]{Fira Sans}
+\setsansfont[BoldFont={Fira Sans SemiBold}]{Fira Sans}
+\setmonofont[BoldFont={Fira Code SemiBold}, StylisticSet={2,3,5}, Scale=MatchLowercase]{Fira Code}
+\setmathfont[Scale=MatchUppercase]{TeX Gyre DejaVu Math}
+\setmathfont[range=up]{Fira Sans}
+\setmathfont[range=it]{Fira Sans Italic}
+\setmathfont[range=bfup]{Fira Sans SemiBold}
+\setmathfont[range=bfit]{Fira Sans SemiBold Italic}
+
+%%%% Beamer Settings
+\usecolortheme{seahorse}
+\useinnertheme{rounded}
+%\useoutertheme{shadow}
+
+\setbeamerfont{frametitle}{size=\normalsize}
+\setbeamerfont{framesubtitle}{size=\small}
+
+\setbeamertemplate{blocks}[default]
+\setbeamerfont{block title}{size=\normalsize}
+\setbeamercolor{block title}{fg=black,bg=blue!30}
+\setbeamercolor{block body}{fg=black,bg=blue!10}
+
+\setbeamertemplate{footline}[frame number]
+%\setbeamertemplate{footline}{}
+\setbeamercolor{footnote}{fg=_note}
+\setbeamercolor{footnote mark}{fg=_note}
+\setbeamerfont{footnote}{size=\small}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{enumerate items}[default]
+\setbeamersize{description width=1cm}
+\setbeamersize{text margin left=5mm, text margin right=5mm}
+\setbeamercovered{transparent}
+
+%% \setbeamertemplate{note page}[plain]
+%% \setbeamerfont{note page}{size=\footnotesize}
+%% \addtobeamertemplate{note page}{\setbeamerfont{itemize/enumerate subbody}{size=\footnotesize}}{}
+%% \setbeameroption{show notes on second screen=bottom}
+
+% https://tex.stackexchange.com/questions/232168/normal-text-is-invisible-when-using-beamer-with-notes-and-xelatex
+\makeatletter 
+\def\beamer@framenotesbegin{% at beginning of slide
+  \usebeamercolor[fg]{normal text}
+  \gdef\beamer@noteitems{}% 
+  \gdef\beamer@notes{}% 
+}
+\makeatother
+
+\colorlet{_note}{red!70!black}
+
+% https://tex.stackexchange.com/questions/305039/hrulefill-with-customized-rule
+\newcommand*{\doublerule}{\hrule width \hsize height 1pt \kern 0.5mm \hrule width \hsize height 2pt}
+\newcommand\doublerulefill{\leavevmode\leaders\vbox{\hrule height .8pt width .1pt\kern1pt\hrule height .8pt}\hfill\kern0pt}
+
+%%%% TikZ
+\usepackage{tikz}
+\usetikzlibrary{calc,trees,shapes.callouts}
+
+% https://tex.stackexchange.com/questions/193289/tikz-in-beamer-subscope-does-not-inherit-visible-on-from-parent-scope
+\tikzset{
+  % use option [visible on=<+->] to uncover parts of a tikzpicture
+  invisible/.style={opacity=0},
+  visible on/.style={alt=#1{}{invisible}},
+  alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+  },
+}
+
+% Inline TikZ picture that behaves an anchored text for TikZ Overlay
+\newcommand{\anchored}[2]{%
+  \tikz[remember picture, baseline=(#1.base)] \node[inner sep=0pt, outer sep=0pt] (#1) {#2};%
+}
+
+%%%% BibTeX
+
+\addbibresource[]{../bibliography.bib}
+\renewcommand*{\bibfont}{\scriptsize}
+
+\let\OrigCite\cite
+\renewcommand*\cite[2][]{%
+  {%
+    \color{_note}%
+    [\if\relax\detokenize{#1}\relax
+      \OrigCite{#2}%
+    \else
+      \OrigCite[#1]{#2}%
+    \fi]
+  }%
+}
+
+%%%% Minted
+
+\usemintedstyle{default}
+\newminted[rocqcode]{elpi.py:RocqLexer}{fontsize=\small,linenos=true,escapeinside=\#\#,texcomments}
+\newmintinline[rocq]{elpi.py:RocqLexer}{escapeinside=\#\#}
+\newminted[elpicode]{elpi.py:ElpiLexer}{fontsize=\small,linenos=true,escapeinside=\#\#,texcomments}
+\newmintinline[elpi]{elpi.py:ElpiLexer}{escapeinside=\#\#}
+
+%%%% Math
+
+\newtheorem{metatheorem}[theorem]{Metatheorem}
+
+%%%% Terms
+
+\usepackage{xspace}
+
+\newcommand{\Coq}{{\scshape Coq}\xspace}
+\newcommand{\Rocq}{{\scshape Rocq}\xspace}
+\newcommand{\RocqElpi}{{\scshape Rocq-Elpi}\xspace}
+\newcommand{\Elpi}{{\scshape Elpi}\xspace}
+
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+%%%% Title
+\title{Tactics for equational reasoning in category theory}
+\subtitle{Automating reasoning modulo associativity, functoriality, and cancellation}
+\author{Kazuhiko Sakaguchi}
+\institute{CNRS, ENS de Lyon, UCBL, LIP, UMR 5668, France}
+\date{March 11, 2026}
+
+\begin{document}
+
+\setlength{\abovedisplayskip}{1ex}
+\setlength{\belowdisplayskip}{1ex}
+
+\begin{frame}[plain]
+  \maketitle
+\end{frame}
+
+\begin{frame}[t]{Example (associativity)}
+
+  \begin{minipage}[t]{.5\textwidth}
+    \only<2->{\rocq{Fail rewrite H.}}
+
+    \phantom{x}
+
+    \only<3->{\rocq{rewrite compoA.}}
+
+    \only<4->{\rocq{rewrite H.}}
+  \end{minipage}%
+  \begin{minipage}[t]{.5\textwidth}
+    $H : g; h = u$
+
+    \doublerulefill
+    
+    \only<-2>{$\visible<2>{\alert(}f; g\visible<2>{\alert)}; h = \dots$}%
+    \only<3>{$f; \alert{(}g; h\alert{)} = \dots$}%
+    \only<4>{$f; \alert{u} = \dots$}%
+  \end{minipage}
+
+\end{frame}
+
+\begin{frame}[t]{Example (functoriality)}
+
+  \begin{minipage}[t]{.5\textwidth}
+    \only<1>{\phantom{x}}%
+    \only<2->{\rocq{rewrite -Fcomp.}}
+
+    \only<3->{\rocq{rewrite compoA.}}
+
+    \only<4->{\rocq{rewrite Fcomp.}}
+
+    \only<5->{\rocq{rewrite H.}}
+  \end{minipage}%
+  \begin{minipage}[t]{.5\textwidth}
+    $F : \mathcal{C} \to \mathcal{D},$
+
+    $H : F(g; h) = u$
+
+    \doublerulefill
+    
+    \only<1>{$F(f; g); F(h) = \dots$}%
+    \only<2>{$F((f; g); h) = \dots$}%
+    \only<3>{$F(f; \alert{(}g; h\alert{)}) = \dots$}%
+    \only<4>{$F(f); F(g; h) = \dots$}%
+    \only<5>{$F(f); \alert{u} = \dots$}%
+  \end{minipage}
+
+\end{frame}
+
+\begin{frame}[t]{Example (cancellation)}
+
+  \begin{minipage}[t]{.5\textwidth}
+    \only<1>{\phantom{x}}%
+    \only<2->{\rocq{rewrite -[g]comp1o.}}
+
+    \only<3->{\rocq{rewrite -(isoK f).}}
+
+    \only<4->{\rocq{rewrite compoA.}}
+
+    \only<5->{\rocq{rewrite H.}}
+  \end{minipage}%
+  \begin{minipage}[t]{.5\textwidth}
+    $f : \mathrm{Iso}(a, b),$
+
+    $g : \mathrm{Hom}(b, c),$
+
+    $h : \mathrm{Hom}(a, c),$
+
+    $H : f; g = h$
+
+    \doublerulefill
+    
+    \only<1>{$g = f^{-1}; h$}%
+    \only<2>{$\alert{1_b}; g = f^{-1}; h$}%
+    \only<3>{$(\alert{f^{-1}; f}); g = f^{-1}; h$}%
+    \only<4>{$f^{-1}; \alert{(}f; g\alert{)} = f^{-1}; h$}%
+    \only<5>{$f^{-1}; \alert{h} = f^{-1}; h$}%
+  \end{minipage}
+
+\end{frame}
+
+\begin{frame}{Solution: \rocq{reflexivity} and \rocq{rewrite} modulo the equational laws}
+
+  \begin{itemize}
+  \item \rocq{rewrite H} should suffice in any of the examples.
+  \item The main differences with AAC Tactics~\cite{DBLP:conf/cpp/BraibantP11}:
+    \begin{itemize}
+    \item[\color{green}\cmark] dependently-typed morphisms,
+    \item[\color{green}\cmark] cancellation (split monomorphisms/epimorphisms),
+    \item[\color{red}\xmark] uninterpreted function symbols,
+    \item[\color{red}\xmark] commutativity.
+    \end{itemize}
+    \medskip
+  \item There is no support for functoriality yet.
+    It requires a few more weeks of work, but should not be difficult.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Methodology: proof by reflection~\cite{DBLP:conf/lics/AllenCHA90}}
+
+  \begin{tikzpicture}[semithick]
+    \begin{scope}[every node/.style = {draw, rounded corners=1mm}]
+      \node (input) at  (-5.5, 2) {input\vphantom{fg}};
+      \node (tree)  at  (0,    2) {syntax tree\vphantom{fg}};
+      \node (nf)    at  (5.5,  2) {normal form\vphantom{fg}};
+    \end{scope}
+    \draw[->, dashed] (input) to [bend right=10] node[below] {\vphantom{fg}reification} (tree);
+    \draw[->]         (tree)  to [bend right=10] node[above] {\vphantom{fg}interpretation} (input);
+    \draw[->]         (tree)  to [bend left=10]  node[above] {\vphantom{fg}normalisation} (nf);
+    \node at (-5.5, 0) {$(a ; (\mathrm{id} ; b)) ; (c ; d)$};
+    \node[inner sep=0, outer sep=0] at (0, 1) {}
+      [child anchor=north,
+       level/.style = {sibling distance={5cm/pow(2,####1)}, level distance=.4cm},
+       every node/.style = {circle, fill=black!20, below, inner sep=-2pt, minimum width=1.2em}]
+      child{
+        child{node{$a$}}
+        child{child{node{\textsf{id}}} child{node{$b$}}}}
+      child{
+        child{node{$c$}}
+        child{node{$d$}}};
+    \node at (5.5, 0) {$\lambda k.\, a ; (b ; (c ; (d ; k)))$};
+    \begin{scope}[visible on=<2->]
+      \node (yoneda) at (0, 4) {Yoneda translation~\cite{DBLP:conf/lics/JaberLPST16}};
+      \draw[->,thick,red] (input) |- (yoneda.south) -| (nf);
+    \end{scope}
+  \end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}{The Yoneda translation~\cite{DBLP:conf/lics/JaberLPST16}}
+
+  \small
+
+  \begin{definition}[Yoneda translation]
+    Given a category $\mathcal{C} \coloneq (\mathrm{Ob}, \mathrm{Hom}, \mathrm{id}, ;)$,
+    we define its Yoneda translation
+    $\mathcal{C}_{\mathcal{Y}} \coloneq
+     (\mathrm{Ob}_{\mathcal{Y}}, \mathrm{Hom}_{\mathcal{Y}},
+      \mathrm{id}_{\mathcal{Y}}, ;_{\mathcal{Y}})$
+    as follows.
+    \begin{align*}
+      \mathrm{Ob}_{\mathcal{Y}}
+      &\coloneq \mathrm{Ob}, \\
+      \mathrm{Hom}_{\mathcal{Y}}(p, q)
+      &\coloneq \Pi r : \mathrm{Ob},\, \mathrm{Hom}(q, r) \to \mathrm{Hom}(p, r), \\
+      \mathrm{id}_{\mathcal{Y}}(p)
+      &\coloneq \lambda (q : \mathrm{Ob}) \, (k : \mathrm{Hom}(p, q)),\, k, \\
+      f ;_{\mathcal{Y}} g
+      &\coloneq \lambda (s : \mathrm{Ob}) \, (k : \mathrm{Hom}(r, s)),\, f \, s \, (g \, s \, k).
+      & \left(\genfrac{}{}{0pt}{}{f : \mathrm{Hom}_{\mathcal{Y}}(p, q)}{g : \mathrm{Hom}_{\mathcal{Y}}(q, r)}\right)
+    \end{align*}
+  \end{definition}
+
+  \begin{metatheorem}[Yoneda lemma]
+    The Yoneda translation of a category is a category with laws that holds definitionally.
+  \end{metatheorem}
+
+\end{frame}
+
+\begin{frame}{The Yoneda translation extended with definitional functoriality}
+
+  \begin{itemize}
+  \item From the PL perspective, the Yoneda translation is \emph{CPS translation}.
+  \item Given a functor $F : \mathcal{C} \to \mathcal{D}$, we can embed $\mathcal{C}$ in the Yoneda
+    translation of $\mathcal{D}$.
+    \begin{itemize}
+    \item $F$ can be seen as another piece of continuation.
+    \end{itemize}
+  \item Given there is a translation rule for functor applications,
+    \begin{itemize}
+    \item identity,
+    \item associativity, and
+    \item functoriality
+    \end{itemize}
+    should become definitional.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Implementation}
+
+  \begin{itemize}
+  \item Built for the Graph Rewriting library~\cite{DBLP:conf/cpp/ArsacHP26}
+  \item 195 lines of code of \Rocq:
+    \begin{itemize}
+    \item Syntax tree,
+    \item Interpretation and normalisation functions, and
+    \item Soundness lemma,
+
+      \ie, for any syntax tree, its normal form equals its interpretation.
+    \end{itemize}
+  \item 199 lines of code of \Elpi~\cite{Tassi:habilitation}:
+    \begin{itemize}
+    \item Reification, and
+    \item Matching modulo AU/G.
+    \end{itemize}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Miscellaneous}
+
+  Reification and matching procedures make a good use of \Elpi:
+  \begin{itemize}
+  \item \emph{Constraints} made the interaction between reification and matching easier.
+  \item The matching procedures use \emph{backtracking} extensively.
+  \end{itemize}
+
+  \bigskip
+
+  Our tactics modulo cancellation are built around the claim that such reasoning amounts to
+  inserting and deleting $I$:
+  \begin{align*}
+    I
+    &\coloneq f; \, I^*; \, f^{-1}
+    & \text{($f$ is a split monomorphism, \ie, $f; f^{-1} = \mathrm{id}$)} \\
+    I^*
+    &\coloneq \mathrm{id} \mid I; \, I^*.
+    & \text{(The Kleene star on $I$)}
+  \end{align*}
+  But, the completeness of our method is still an \emph{open question}.
+
+\end{frame}
+
+\appendix
+
+\begin{frame}[allowframebreaks]{References}
+ \printbibliography
+\end{frame}
+
+\end{document}
